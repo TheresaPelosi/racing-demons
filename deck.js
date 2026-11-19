@@ -27,7 +27,7 @@ export function createDeck(ownerId) {
                 suit,
                 rank.name,
                 rank.value,
-                `/images/${rank.name}_of_${suit}.png`
+                `/racing-demons/images/${rank.name}_of_${suit}.png`
             ));
         }
     }
@@ -80,10 +80,10 @@ export function removeCardFromSlot(player, sourceType, slotIndex) {
 export function preloadCardImages() {
     const promises = [];
 
-    promises.push(convertToPromise('./images/card-back.png'));
+    promises.push(convertToPromise('/racing-demons/images/card-back.png'));
     SUITS.forEach(suit => {
         RANKS.forEach(rank => {
-            promises.push(convertToPromise(`./images/${rank.name}_of_${suit}.png`));
+            promises.push(convertToPromise(`/racing-demons/images/${rank.name}_of_${suit}.png`));
         });
     });
 
