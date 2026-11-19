@@ -1,5 +1,5 @@
 import { getActiveDrag } from './dragAndDrop.js';
-import {getHumanPlayer} from "./gameState";
+import {getHumanPlayer} from "./gameState.js";
 
 export const dom = {
     controlsEl: document.querySelector('.controls'),
