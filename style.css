@@ -1,8 +1,8 @@
 :root {
     --card-w: 90px;
     --card-h: 130px;
-    --center-card-w: 90px;
-    --center-card-h: 130px;
+    --center-card-w: var(--card-w);
+    --center-card-h: var(--card-h);
     --center-gap: 12px;
 }
 
@@ -12,9 +12,6 @@
         /* Fits 5 player cards across (1 Demon + 4 Tableau) comfortably on narrow screens */
         --card-w: clamp(50px, 15.5vw, 72px);
         --card-h: calc(var(--card-w) * 1.44);
-        /* Center cards start slightly smaller so 2 rows fit cleanly inside 100dvh */
-        --center-card-w: clamp(44px, 13.5vw, 66px);
-        --center-card-h: calc(var(--center-card-w) * 1.44);
         --center-gap: 8px;
     }
 }
@@ -24,8 +21,6 @@
     :root {
         --card-w: clamp(46px, 13vw, 60px);
         --card-h: calc(var(--card-w) * 1.44);
-        --center-card-w: clamp(40px, 11.5vw, 54px);
-        --center-card-h: calc(var(--center-card-w) * 1.44);
         --center-gap: 6px;
     }
 }
@@ -155,9 +150,10 @@ button:disabled {
 }
 
 /* Pre-sized for 2 rows of center cards; never pushes #player-area off-screen */
+/* Takes all remaining vertical space inside 100dvh without pushing #player-area */
 #center-area {
     flex: 1 1 auto;
-    min-height: calc((var(--center-card-h) * 2) + var(--center-gap) + 20px);
+    min-height: 0;
     background: rgba(255, 255, 255, 0.08);
     border: 2px dashed rgba(255, 255, 255, 0.3);
     border-radius: 10px;

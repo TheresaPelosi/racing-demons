@@ -200,7 +200,7 @@ function adjustCenterCardSize(pileCount) {
     const container = dom.centerAreaEl;
     if (!container) return;
 
-    if (pileCount <= 8) {
+    if (pileCount === 0) {
         container.style.removeProperty('--center-card-w');
         container.style.removeProperty('--center-card-h');
         return;
@@ -215,8 +215,12 @@ function adjustCenterCardSize(pileCount) {
     const availH = container.clientHeight - padY;
     const aspect = 1.44;
 
+    // Match the player's actual rendered hand card width on this screen
+    const sampleSlot = dom.demonSlotEl || document.documentElement;
+    const maxDefaultW = Math.floor(parseFloat(getComputedStyle(sampleSlot).width)) || 90;
+
     let bestW = 32;
-    for (let cols = 4; cols <= pileCount; cols++) {
+    for (let cols = 1; cols <= pileCount; cols++) {
         const rows = Math.ceil(pileCount / cols);
         const maxWByWidth = (availW - gap * (cols - 1)) / cols;
         const maxHByHeight = (availH - gap * (rows - 1)) / rows;
@@ -228,9 +232,13 @@ function adjustCenterCardSize(pileCount) {
         }
     }
 
-    const maxDefaultW = window.innerWidth <= 768 ? 66 : 90;
     const finalW = Math.min(bestW, maxDefaultW);
 
-    container.style.setProperty('--center-card-w', `${finalW}px`);
-    container.style.setProperty('--center-card-h', `${Math.round(finalW * aspect)}px`);
+    if (finalW >= maxDefaultW) {
+        container.style.removeProperty('--center-card-w');
+        container.style.removeProperty('--center-card-h');
+    } else {
+        container.style.setProperty('--center-card-w', `${finalW}px`);
+        container.style.setProperty('--center-card-h', `${Math.round(finalW * aspect)}px`);
+    }
 }
