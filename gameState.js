@@ -1,4 +1,5 @@
-import { createDeck, removeCardFromZone } from './deck.js';
+import { createDeck, removeCardFromSlot } from './deck.js';
+import Player from './player.js'
 import { startBots, stopBots } from './botBehavior.js';
 import { animateBotCard, cancelAndReturnDrag, getActiveDrag } from './dragAndDrop.js';
 import {
@@ -11,7 +12,7 @@ import {
     setGameOverUI
 } from './ui.js';
 
-export const TOTAL_ROUNDS = 5;
+const TOTAL_ROUNDS = 5;
 
 export const state = {
     currentRound: 0,
@@ -21,16 +22,16 @@ export const state = {
 };
 
 export function getHumanPlayer() {
-    return state.players.find(p => p.id === 'player');
+    return state.players.find(p => !p.isBot);
 }
 
 export function startNewGame() {
     state.currentRound = 0;
     state.players = [
-        { id: 'player', name: 'You', isBot: false, score: 0 },
-        { id: 'bot1', name: 'Bot 1', isBot: true, score: 0 },
-        { id: 'bot2', name: 'Bot 2', isBot: true, score: 0 },
-        { id: 'bot3', name: 'Bot 3', isBot: true, score: 0 }
+        new Player('player', 'You', false),
+        new Player('bot1', 'Derek', true),
+        new Player('bot2', 'Kiera', true),
+        new Player('bot3', 'Tina', true)
     ];
     updateScoreboard(state.players);
     startNextRound();
@@ -49,16 +50,7 @@ export function startNextRound() {
 
     state.players.forEach(p => {
         const deck = createDeck(p.id);
-        p.demonPile = deck.splice(0, 13);
-        p.tableau = [
-            deck.splice(0, 1),
-            deck.splice(0, 1),
-            deck.splice(0, 1),
-            deck.splice(0, 1)
-        ];
-        p.stock = deck;
-        p.flipped = [];
-        p.cardsPlayedThisRound = 0;
+        p.addHand(deck);
     });
 
     renderAll(state);
@@ -77,12 +69,13 @@ export function findValidCenterPile(card) {
 }
 
 export function executeMoveToCenter(player, card, sourceType, slotIndex, pileIndex) {
-    removeCardFromZone(player, sourceType, slotIndex);
+    removeCardFromSlot(player, sourceType, slotIndex);
     player.cardsPlayedThisRound++;
 
     let targetIndex = pileIndex;
 
     if (pileIndex === -1) {
+        // card is an ace. Place in the leftmost available slot
         const holeIndex = state.centerPiles.findIndex(p => p === null);
         const newPile = {
             suit: card.suit,
@@ -164,7 +157,7 @@ export function checkRoundEnd(player) {
     }
 }
 
-export function endGame() {
+function endGame() {
     state.roundActive = false;
     stopBots();
 

@@ -5,7 +5,7 @@ let botInterval = null;
 
 export function startBots(difficulty) {
     stopBots();
-    const speedMs = difficulty === 'easy' ? 2400 : difficulty === 'medium' ? 1400 : 800;
+    const speedMs = difficulty === 'easy' ? 2200 : difficulty === 'medium' ? 1400 : 800;
 
     botInterval = setInterval(() => {
         if (!state.roundActive) return;
@@ -14,7 +14,7 @@ export function startBots(difficulty) {
             if (!state.roundActive) break;
             takeBotTurn(state.players.at(idx));
         }
-    }, speedMs);
+    }, speedMs * ((Math.random() * 0.25) + 0.82));
 }
 
 export function stopBots() {

@@ -1,4 +1,5 @@
 import { getActiveDrag } from './dragAndDrop.js';
+import {getHumanPlayer} from "./gameState";
 
 export const dom = {
     controlsEl: document.querySelector('.controls'),
@@ -27,6 +28,7 @@ export function setRoundStartUI(currentRound, totalRounds) {
     dom.readyBtn.style.display = 'none';
     dom.playerAreaEl.classList.remove('round-ended');
     dom.roundInfoEl.textContent = `Round: ${currentRound} / ${totalRounds}`;
+    dom.messageBannerEl.textContent = ``;
     dom.roundInfoEl.style.visibility = 'visible';
 }
 
@@ -42,12 +44,13 @@ export function setGameOverUI(winner) {
     dom.difficultySelectEl.disabled = false;
     dom.readyBtn.style.display = 'none';
     dom.playerAreaEl.classList.add('round-ended');
-    dom.messageBannerEl.textContent = `Game Over! ${winner.name} wins with ${winner.score} points!`;
+    dom.messageBannerEl.textContent = winner.isBot ? `Game Over! ${winner.name} wins with ${winner.score} points!`
+        : `Game Over! ${winner.name} win with ${winner.score} points!`;
 }
 
 export function renderAll(state) {
     renderCenterPiles(state.centerPiles);
-    const human = state.players.find(p => p.id === 'player');
+    const human = getHumanPlayer(state.players);
     if (human) renderPlayerBoard(human);
     renderBotStatus(state.players);
 }
@@ -58,7 +61,7 @@ export function updateScoreboard(players) {
     });
 }
 
-export function renderBotStatus(players) {
+function renderBotStatus(players) {
     for (let i = 1; i <= 3; i++) {
         const bot = players.at(i);
         if (bot) {
@@ -69,6 +72,7 @@ export function renderBotStatus(players) {
 
 export function renderCenterPiles(centerPiles) {
     dom.centerAreaEl.innerHTML = '';
+    adjustCenterCardSize(centerPiles.length);
 
     if (centerPiles.length === 0) {
         dom.centerAreaEl.innerHTML = '<div class="center-placeholder">Drag Aces here to start center piles</div>';
@@ -190,4 +194,43 @@ export function renderPlayerBoard(human) {
             dom.flippedSlotEl.appendChild(img);
         }
     }
+}
+
+function adjustCenterCardSize(pileCount) {
+    const container = dom.centerAreaEl;
+    if (!container) return;
+
+    if (pileCount <= 8) {
+        container.style.removeProperty('--center-card-w');
+        container.style.removeProperty('--center-card-h');
+        return;
+    }
+
+    const style = getComputedStyle(container);
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const gap = parseFloat(style.gap) || 8;
+
+    const availW = container.clientWidth - padX;
+    const availH = container.clientHeight - padY;
+    const aspect = 1.44;
+
+    let bestW = 32;
+    for (let cols = 4; cols <= pileCount; cols++) {
+        const rows = Math.ceil(pileCount / cols);
+        const maxWByWidth = (availW - gap * (cols - 1)) / cols;
+        const maxHByHeight = (availH - gap * (rows - 1)) / rows;
+        const maxWByHeight = maxHByHeight / aspect;
+        const candidateW = Math.floor(Math.min(maxWByWidth, maxWByHeight));
+
+        if (candidateW > bestW) {
+            bestW = candidateW;
+        }
+    }
+
+    const maxDefaultW = window.innerWidth <= 768 ? 66 : 90;
+    const finalW = Math.min(bestW, maxDefaultW);
+
+    container.style.setProperty('--center-card-w', `${finalW}px`);
+    container.style.setProperty('--center-card-h', `${Math.round(finalW * aspect)}px`);
 }

@@ -1,4 +1,4 @@
-import { removeCardFromZone } from './deck.js';
+import { removeCardFromSlot } from './deck.js';
 import { state, getHumanPlayer, executeMoveToCenter, checkRoundEnd } from './gameState.js';
 import { dom, renderPlayerBoard } from './ui.js';
 
@@ -69,7 +69,6 @@ function onPointerMove(e) {
     const human = getHumanPlayer();
     const { card, sourceType, slotIndex } = activeDrag;
 
-    // 1. Instant snap onto an existing valid center pile on contact
     const targetPileEl = hitTarget.closest('.center-pile');
     if (targetPileEl) {
         const pileIndex = parseInt(targetPileEl.dataset.pileIndex, 10);
@@ -83,7 +82,6 @@ function onPointerMove(e) {
         }
     }
 
-    // 2. Instant snap when an Ace's center enters the center playing area
     const inCenterArea = hitTarget.closest('#center-area');
     if (inCenterArea && card.value === 1) {
         cleanupDragListeners();
@@ -116,7 +114,7 @@ function onPointerUp(e) {
         if (human.tableau.at(targetSlotIndex).length === 0) {
             activeDrag = null;
             imgEl.remove();
-            removeCardFromZone(human, sourceType, slotIndex);
+            removeCardFromSlot(human, sourceType, slotIndex);
             human.tableau.at(targetSlotIndex).push(card);
             renderPlayerBoard(human);
             checkRoundEnd(human);

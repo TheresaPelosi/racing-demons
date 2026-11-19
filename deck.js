@@ -16,6 +16,7 @@ const RANKS = [
     { name: 'queen', value: 12 },
     { name: 'king', value: 13 }
 ];
+const cardImageCache = {};
 
 export function createDeck(ownerId) {
     const deck = [];
@@ -23,7 +24,6 @@ export function createDeck(ownerId) {
         for (const rank of RANKS) {
             deck.push(new Card(
                 `${ownerId}-${rank.name}-${suit}`,
-                ownerId,
                 suit,
                 rank.name,
                 rank.value,
@@ -56,15 +56,15 @@ export function flipOrRecycleStock(player) {
             player.flipped.push(player.stock.pop());
         }
     } else if (player.flipped.length > 0) {
-        const recycled = [...player.flipped];
+        const recycled = [...player.flipped].reverse();
         const topCard = recycled.pop();
         recycled.unshift(topCard);
-        player.stock = recycled.reverse();
+        player.stock = recycled;
         player.flipped = [];
     }
 }
 
-export function removeCardFromZone(player, sourceType, slotIndex) {
+export function removeCardFromSlot(player, sourceType, slotIndex) {
     if (sourceType === 'demon') {
         player.demonPile.pop();
     } else if (sourceType === 'tableau') {
@@ -77,10 +77,35 @@ export function removeCardFromZone(player, sourceType, slotIndex) {
     }
 }
 
+export function preloadCardImages() {
+    const promises = [];
+
+    promises.push(convertToPromise('/images/card-back.png'));
+    SUITS.forEach(suit => {
+        RANKS.forEach(rank => {
+            promises.push(convertToPromise(`/images/${rank.name}_of_${suit}.png`));
+        });
+    });
+
+    // Wait until every card is ready
+    return Promise.all(promises);
+}
+
+function convertToPromise(path) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = path;
+        img.onload = () => {
+            cardImageCache[path] = img;
+            resolve(img);
+        };
+        img.onerror = reject;
+    });
+}
+
 export class Card {
-    constructor(id, ownerId, suit, rankName, value, image) {
+    constructor(id, suit, rankName, value, image) {
         this.id = id;
-        this.ownerId = ownerId;
         this.suit = suit;
         this.rankName = rankName;
         this.value = value;
