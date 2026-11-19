@@ -80,15 +80,20 @@ export function removeCardFromSlot(player, sourceType, slotIndex) {
 export function preloadCardImages() {
     const promises = [];
 
-    promises.push(convertToPromise('/images/card-back.png'));
+    promises.push(convertToPromise('./images/card-back.png'));
     SUITS.forEach(suit => {
         RANKS.forEach(rank => {
-            promises.push(convertToPromise(`/images/${rank.name}_of_${suit}.png`));
+            promises.push(convertToPromise(`./images/${rank.name}_of_${suit}.png`));
         });
     });
 
     // Wait until every card is ready
-    return Promise.all(promises);
+    try {
+        return Promise.all(promises);
+    } catch (e) {
+        console.log(e);
+        console.log(e.toString());
+    }
 }
 
 function convertToPromise(path) {
